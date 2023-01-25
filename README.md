@@ -10,3 +10,8 @@ Game is over if you lose all three lives and game is won when you collected all 
 ![game_screenshot2](https://user-images.githubusercontent.com/121691364/214570669-79231716-54cf-4095-b73a-2fdca308a3e7.PNG)
 
 ![game_screenshot3](https://user-images.githubusercontent.com/121691364/214570820-c1e97954-172f-4d0f-b8c6-b7ca59b091cd.PNG)
+
+
+
+Mario's image downloaded from:
+https://freepngimg.com/png/92986-mario-play-toy-super-bros-png-file-hd/download
