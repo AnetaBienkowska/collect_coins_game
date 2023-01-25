@@ -6,7 +6,7 @@ from pygame.locals import *
 
 class Player:
     def __init__(self, x, y, width, height, screen):
-        self.image = pg.image.load("mario.bmp")
+        self.image = pg.image.load("mario_image.png")
         self.scaled_image = pg.transform.scale(self.image, (width, height))
         self.rect = self.scaled_image.get_rect()
         self.rect.x = x
