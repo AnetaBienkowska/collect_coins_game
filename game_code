@@ -1,0 +1,187 @@
+import sys
+import pygame as pg
+from pygame.locals import *
+
+# Defining the Player
+
+class Player:
+    def __init__(self, x, y, width, height, screen):
+        self.image = pg.image.load("mario.bmp")
+        self.scaled_image = pg.transform.scale(self.image, (width, height))
+        self.rect = self.scaled_image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.width = width
+        self.height = height
+        self.prev_rect = self.rect.copy()
+        self.screen = screen
+        self.draw()
+
+    def draw(self):
+        self.screen.fill((0, 0, 0), self.prev_rect)
+        self.prev_rect = self.rect.copy()
+        self.screen.blit(self.scaled_image, self.rect)
+
+# Defining the obstacles
+
+class Obstacle:
+    def __init__(self, x, y, width, height, screen):
+        self.rect = pg.Rect(x, y, width, height)
+        self.width = width
+        self.height = height
+        self.screen = screen
+        self.x = x
+        self.y = y
+        self.draw()
+
+    def draw(self):
+        pg.draw.rect(self.screen, (255, 0, 0), self.rect, 20)
+
+# Defining the coins
+
+class Coin(Obstacle):
+    def __init__(self, x, y, width, height, screen):
+        super().__init__(x, y, width, height, screen)
+        self.rect = pg.Rect(x, y, width, height)
+        self.width = width
+        self.height = height
+        self.screen = screen
+        self.x = x
+        self.y = y
+        self.draw()
+
+    def draw(self):
+        pg.draw.rect(self.screen, (255, 255, 0), self.rect, 20)
+
+# Game window function
+screen_width = 1200
+screen_height = 800
+pg.init()
+screen = pg.display.set_mode((screen_width, screen_height))
+pg.display.set_caption("Coin collection game")
+
+# Initial values
+starting_x = 1
+starting_y = screen_height//1.2
+player_vx = 0
+player_vy = 0
+coins_collected = 0
+collected_coins = []
+player_lives = 3
+
+# Unmovable obstacles
+obstacle1 = Obstacle(150, 650, 200, 20, screen)
+obstacle2 = Obstacle(350, 550, 200, 20, screen)
+obstacle3 = Obstacle(550, 450, 200, 20, screen)
+obstacle4 = Obstacle(750, 350, 200, 20, screen)
+obstacle5 = Obstacle(950, 250, 200, 20, screen)
+obstacles = [obstacle1, obstacle2, obstacle3, obstacle4, obstacle5]
+
+# Unmovable coins
+coin1 = Coin(240, 580, 20, 20, screen)
+coin2 = Coin(440, 480, 20, 20, screen)
+coin3 = Coin(640, 380, 20, 20, screen)
+coin4 = Coin(840, 280, 20, 20, screen)
+coin5 = Coin(1040, 180, 20, 20, screen)
+coins = [coin1, coin2, coin3, coin4, coin5]
+
+# Legend
+
+legend_rect = pg.Rect(10, 10, 100, 60)
+def update_legend(player_lives, coins_collected):
+    font = pg.font.Font(None, 30)
+    lives_text = font.render(
+        "Lives: " + str(player_lives), True, (255, 255, 255))
+    coins_text = font.render(
+        "Coins: " + str(coins_collected), True, (255, 255, 255))
+    screen.blit(lives_text, (10, 10))
+    screen.blit(coins_text, (10, 40))
+
+update_legend(player_lives, coins_collected)
+
+game_over = False
+player_won = False
+
+# Player's moves
+player = Player(starting_x, starting_y, 100, 100, screen)
+while True:
+    for event in pg.event.get():
+        if event.type == KEYDOWN:
+            if not game_over and not player_won:
+                if event.key == K_LEFT:
+                    player_vx = -1
+                elif event.key == K_RIGHT:
+                    player_vx = 1
+                elif event.key == K_UP:
+                    player_vy = -2
+                elif event.key == K_DOWN:
+                    player_vy = 1
+        elif event.type == KEYUP:
+            if not game_over and not player_won:
+                if event.key == K_LEFT or event.key == K_RIGHT:
+                    player_vx = 0
+                elif event.key == K_UP or event.key == K_DOWN:
+                    player_vy = 0
+        elif event.type == QUIT:
+            sys.exit()
+    if not game_over and not player_won:
+        player.rect.x += player_vx
+        player.rect.y += player_vy
+        player.draw()
+        if player.rect.left < 0:
+            player.rect.left = 0
+        if player.rect.right > screen_width:
+            player.rect.right = screen_width
+        if player.rect.top < 0:
+            player.rect.top = 0
+        if player.rect.bottom > screen_height:
+            player.rect.bottom = screen_height
+        player.draw()
+        if player.rect.colliderect(legend_rect):
+            if player.rect.right > legend_rect.left:
+                player.rect.right = legend_rect.left
+            if player.rect.left < legend_rect.right:
+                player.rect.left = legend_rect.right
+            if player.rect.bottom > legend_rect.top:
+                player.rect.bottom = legend_rect.top
+            if player.rect.top < legend_rect.bottom:
+                player.rect.top = legend_rect.bottom
+        player.draw()
+    elif player_lives == 0:
+        game_over = True
+        font = pg.font.Font(None, 100)
+        game_over_text = font.render("Game Over", True, (0, 255, 255))
+        screen.blit(game_over_text, (screen_width//3, screen_height//2))
+        pg.display.update()
+    elif coins_collected == 5:
+        player_won = True
+        font = pg.font.Font(None, 100)
+        player_won_text = font.render("YOU WON!", True, (0, 255, 255))
+        screen.blit(player_won_text, (screen_width//3, screen_height//2))
+
+# Player cannot touch the obstacles - if it happenes, player lose one live and go back to the starting position
+    for obstacle in obstacles:
+        if player.rect.x + player.width > obstacle.x and player.rect.x < obstacle.x + obstacle.width and player.rect.y + player.height > obstacle.y and player.rect.y < obstacle.y + obstacle.height:
+            player_lives -= 1
+            screen.fill((0, 0, 0), (10, 10, 100, 60))
+            update_legend(player_lives, coins_collected)
+            player.rect.x = starting_x
+            player.rect.y = starting_y
+            pg.display.update()
+            if player_lives == 0:
+                game_over = True
+
+# Player collect coins - if 5 coins collected, game won
+    for coin in coins:
+        if player.rect.colliderect(coin.rect):
+            if coin not in collected_coins:
+                collected_coins.append(coin)
+                coins_collected += 1
+                coins.remove(coin)
+                screen.fill((0, 0, 0), (10, 40, 100, 60))
+                update_legend(player_lives, coins_collected)
+                pg.display.update()
+            if coins_collected == 5:
+                player_won = True
+
+    pg.display.update()
