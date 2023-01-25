@@ -6,3 +6,7 @@ Legend added in the left upper corner of the game window updates every time you 
 Game is over if you lose all three lives and game is won when you collected all coins. In both situaton the proper text appear on the screen and you cannot make any more moves.
 
 ![game_screenshot](https://user-images.githubusercontent.com/121691364/214567897-766e14db-fb50-4ee7-8b6a-e2f066381df4.PNG)
+
+![game_screenshot2](https://user-images.githubusercontent.com/121691364/214570669-79231716-54cf-4095-b73a-2fdca308a3e7.PNG)
+
+![game_screenshot3](https://user-images.githubusercontent.com/121691364/214570820-c1e97954-172f-4d0f-b8c6-b7ca59b091cd.PNG)
