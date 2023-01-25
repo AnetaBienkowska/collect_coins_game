@@ -1,0 +1,1 @@
+# coins_collecting_game
