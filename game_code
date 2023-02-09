@@ -5,7 +5,7 @@ from pygame.locals import *
 
 # Defining the Player
 class Player:
-    def __init__(self, x, y, width, height, screen):
+    def __init__(self, x, y, width=100, height=100, screen=pg.display.set_mode((1200, 800))):
         self.image = pg.image.load("mario_image.png")
         self.scaled_image = pg.transform.scale(self.image, (width, height))
         self.rect = self.scaled_image.get_rect()
@@ -27,7 +27,7 @@ class Player:
 
 # Defining the obstacles
 class Obstacle:
-    def __init__(self, x, y, width, height, screen):
+    def __init__(self, x, y,  screen=pg.display.set_mode((1200, 800)), width=200, height=20):
         self.rect = pg.Rect(x, y, width, height)
         self.width = width
         self.height = height
@@ -40,9 +40,10 @@ class Obstacle:
         pg.draw.rect(self.screen, (255, 0, 0), self.rect, 20)
 
 # Defining the coins
+
+
 class Coin:
-    def __init__(self, center_x, center_y, radius, screen):
-        # circle_surface = pg.Surface((100, 100))
+    def __init__(self, center_x, center_y, screen=pg.display.set_mode((1200, 800)), radius=20):
         self.circle = pg.draw.circle(
             screen, (255, 0, 0), (center_x, center_y), radius)
         self.screen = screen
@@ -56,6 +57,15 @@ class Coin:
 
 
 def run_game():
+    """
+    Function contains all Collect Coins Game components. 
+    The rules are very simple - collect all coins to win, 
+    but be careful because if you collide with the red obstacle 
+    you lose one of the three lives and go back to the starting position.
+    If you lose all three lives - game is over.
+    But don't worry, press SPACE if you want to try again.
+
+    """
     game_over = False
     player_won = False
 
@@ -86,25 +96,25 @@ def run_game():
     screen.blit(coins_text, (10, 40))
 
     # Movable player
-    player = Player(starting_x, starting_y, 100, 100, screen)
+    player = Player(starting_x, starting_y)
 
     # Unmovable obstacles
-    obstacle1 = Obstacle(150, 650, 200, 20, screen)
-    obstacle2 = Obstacle(350, 550, 200, 20, screen)
-    obstacle3 = Obstacle(550, 450, 200, 20, screen)
-    obstacle4 = Obstacle(750, 350, 200, 20, screen)
-    obstacle5 = Obstacle(950, 250, 200, 20, screen)
+    obstacle1 = Obstacle(150, 650)
+    obstacle2 = Obstacle(350, 550)
+    obstacle3 = Obstacle(550, 450)
+    obstacle4 = Obstacle(750, 350)
+    obstacle5 = Obstacle(950, 250)
     obstacles = [obstacle1, obstacle2, obstacle3, obstacle4, obstacle5]
 
     # Unmovable coins
-    radius = 20
-    coin1 = Coin(250, 570, radius, screen)
-    coin2 = Coin(450, 470, radius, screen)
-    coin3 = Coin(650, 370, radius, screen)
-    coin4 = Coin(850, 270, radius, screen)
-    coin5 = Coin(1050, 170, radius, screen)
+    coin1 = Coin(250, 570)
+    coin2 = Coin(450, 470)
+    coin3 = Coin(650, 370)
+    coin4 = Coin(850, 270)
+    coin5 = Coin(1050, 170)
     coins = [coin1, coin2, coin3, coin4, coin5]
 
+    # Player movements
     while True:
         for event in pg.event.get():
             if event.type == KEYDOWN:
@@ -131,8 +141,8 @@ def run_game():
             player.rect.y += player_vy
             player.draw()
         pg.display.update()
-        
-        # To avoid moving plyer outside the window frames
+
+        # Restrictions to avoid moving player outside the window frames
         if player.rect.left < 0:
             player.rect.left = 0
         if player.rect.right > screen_width:
@@ -142,8 +152,8 @@ def run_game():
         if player.rect.bottom > screen_height:
             player.rect.bottom = screen_height
         player.draw()
-        
-        # To avoid moving player on the legend area
+
+        # Restrictions to avoid moving player on the legend area
         if player.rect.colliderect(legend_rect):
             if player.rect.right > legend_rect.left:
                 player.rect.right = legend_rect.left
@@ -155,7 +165,7 @@ def run_game():
                 player.rect.top = legend_rect.bottom
         player.draw()
 
-        # Player cannot touch the obstacles - if it happenes, player lose one live and go back to the starting position
+        # Player cannot collide with the obstacles - if it happens, player lose one of the three lives and go back to the starting position
         for obstacle in obstacles:
             if player.rect.x + player.width + 0.1 > obstacle.x and player.rect.x < obstacle.x + obstacle.width and player.rect.y + player.height + 0.1 > obstacle.y and player.rect.y < obstacle.y + obstacle.height:
                 player_lives -= 1
@@ -175,7 +185,7 @@ def run_game():
                                 (screen_width//3, screen_height//2))
                     pg.display.update()
 
-        # Player collect coins - if 5 coins collected, game won
+        # Player collects coins - if 5 coins collected, game won
         for coin in coins:
             if player.rect.collidepoint(coin.circle.center):
                 if coin not in collected_coins:
@@ -196,6 +206,21 @@ def run_game():
                                 (screen_width//3, screen_height//2))
                     pg.display.update()
 
+        # Player can try again after winning or losing by clicking SPACE
+        if game_over or player_won:
+            try_again_font = pg.font.Font(None, 45)
+            try_again_text = try_again_font.render(
+                "Press SPACE to try again", True, (0, 255, 255))
+            screen.blit(try_again_text,
+                        (screen_width//3, screen_height//1.2))
+            pg.display.update()
+            for event in pg.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_SPACE:
+                        run_game()
+                    pg.display.update()
+
         pg.display.update()
+
 
 run_game()
