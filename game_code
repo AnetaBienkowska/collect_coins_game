@@ -2,7 +2,6 @@ import sys
 import pygame as pg
 from pygame.locals import *
 
-
 # Defining the Player
 class Player:
     def __init__(self, x, y, width=100, height=100, screen=pg.display.set_mode((1200, 800))):
@@ -19,6 +18,7 @@ class Player:
         self.starting_y = 800//1.2  # screen_height = 800
         self.draw()
 
+
     def draw(self):
         self.screen.fill((0, 0, 0), self.prev_rect)
         self.prev_rect = self.rect.copy()
@@ -27,7 +27,7 @@ class Player:
 
 # Defining the obstacles
 class Obstacle:
-    def __init__(self, x, y,  screen=pg.display.set_mode((1200, 800)), width=200, height=20):
+    def __init__(self, x, y, width, height, screen=pg.display.set_mode((1200, 800))):
         self.rect = pg.Rect(x, y, width, height)
         self.width = width
         self.height = height
@@ -36,12 +36,11 @@ class Obstacle:
         self.y = y
         self.draw()
 
+
     def draw(self):
         pg.draw.rect(self.screen, (255, 0, 0), self.rect, 20)
 
 # Defining the coins
-
-
 class Coin:
     def __init__(self, center_x, center_y, screen=pg.display.set_mode((1200, 800)), radius=20):
         self.circle = pg.draw.circle(
@@ -52,15 +51,18 @@ class Coin:
         self.radius = radius
         self.draw()
 
+
     def draw(self):
         pg.draw.circle(self.screen, (255, 255, 0), (self.x, self.y), 20)
 
 
-def run_game():
+level = 1
+
+def run_game(player, obstacles, coins):
     """
-    Function contains all Collect Coins Game components. 
-    The rules are very simple - collect all coins to win, 
-    but be careful because if you collide with the red obstacle 
+    Function contains all Collect Coins Game components.
+    The rules are very simple - collect all coins to win,
+    but be careful because if you collide with the red obstacle
     you lose one of the three lives and go back to the starting position.
     If you lose all three lives - game is over.
     But don't worry, press SPACE if you want to try again.
@@ -68,6 +70,7 @@ def run_game():
     """
     game_over = False
     player_won = False
+    global level
 
     # Game window function
     pg.init()
@@ -95,38 +98,19 @@ def run_game():
     screen.blit(lives_text, (10, 10))
     screen.blit(coins_text, (10, 40))
 
-    # Movable player
-    player = Player(starting_x, starting_y)
-
-    # Unmovable obstacles
-    obstacle1 = Obstacle(150, 650)
-    obstacle2 = Obstacle(350, 550)
-    obstacle3 = Obstacle(550, 450)
-    obstacle4 = Obstacle(750, 350)
-    obstacle5 = Obstacle(950, 250)
-    obstacles = [obstacle1, obstacle2, obstacle3, obstacle4, obstacle5]
-
-    # Unmovable coins
-    coin1 = Coin(250, 570)
-    coin2 = Coin(450, 470)
-    coin3 = Coin(650, 370)
-    coin4 = Coin(850, 270)
-    coin5 = Coin(1050, 170)
-    coins = [coin1, coin2, coin3, coin4, coin5]
-
     # Player movements
     while True:
         for event in pg.event.get():
             if event.type == KEYDOWN:
                 if not game_over and not player_won:
                     if event.key == K_LEFT:
-                        player_vx = -1
+                        player_vx = -2
                     elif event.key == K_RIGHT:
-                        player_vx = 1
+                        player_vx = 2
                     elif event.key == K_UP:
                         player_vy = -2
                     elif event.key == K_DOWN:
-                        player_vy = 1
+                        player_vy = 2
             elif event.type == KEYUP:
                 if not game_over and not player_won:
                     if event.key == K_LEFT or event.key == K_RIGHT:
@@ -184,6 +168,7 @@ def run_game():
                     screen.blit(game_over_text,
                                 (screen_width//3, screen_height//2))
                     pg.display.update()
+            obstacle.draw()
 
         # Player collects coins - if 5 coins collected, game won
         for coin in coins:
@@ -205,9 +190,10 @@ def run_game():
                     screen.blit(player_won_text,
                                 (screen_width//3, screen_height//2))
                     pg.display.update()
+            coin.draw()
 
         # Player can try again after winning or losing by clicking SPACE
-        if game_over or player_won:
+        if game_over == True:
             try_again_font = pg.font.Font(None, 45)
             try_again_text = try_again_font.render(
                 "Press SPACE to try again", True, (0, 255, 255))
@@ -217,10 +203,52 @@ def run_game():
             for event in pg.event.get():
                 if event.type == KEYDOWN:
                     if event.key == K_SPACE:
-                        run_game()
-                    pg.display.update()
+                        coins = [coin1, coin2, coin3, coin4, coin5]
+                        for coin in coins:
+                            coin.draw()
+                        pg.display.update()
+                        run_game(player, obstacles, coins)
 
+        if player_won == True:
+            next_level_font = pg.font.Font(None, 45)
+            next_level_text = next_level_font.render(
+                "Press SPACE to go to the next level", True, (0, 255, 255))
+            screen.blit(next_level_text,
+                        (screen_width//3.5, screen_height//1.2))
+            pg.display.update()
+            for event in pg.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_SPACE:
+                        player.rect.x = starting_x
+                        player.rect.y = starting_y
+                        coins = [coin1, coin2, coin3, coin4, coin5]
+                        for coin in coins:
+                            coin.draw()
+                        pg.display.update()
+                        run_game(player, obstacles, coins)
         pg.display.update()
 
 
-run_game()
+screen_width = 1200
+screen_height = 800
+starting_x = 1
+starting_y = screen_height//1.2
+
+player = Player(starting_x, starting_y)
+
+obstacle1 = Obstacle(150, 650, 200, 20)
+obstacle2 = Obstacle(350, 550, 200, 20)
+obstacle3 = Obstacle(550, 450, 200, 20)
+obstacle4 = Obstacle(750, 350, 200, 20)
+obstacle5 = Obstacle(950, 250, 200, 20)
+obstacles = [obstacle1, obstacle2,
+             obstacle3, obstacle4, obstacle5]
+
+coin1 = Coin(250, 570)
+coin2 = Coin(450, 470)
+coin3 = Coin(650, 370)
+coin4 = Coin(850, 270)
+coin5 = Coin(1050, 170)
+coins = [coin1, coin2, coin3, coin4, coin5]
+
+run_game(player, obstacles, coins)
